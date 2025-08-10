@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo } from 'react';
 
 interface User {
   id: string;
@@ -27,8 +27,8 @@ interface AuthContextType {
   signup: (email: string, password: string, name: string) => Promise<boolean>;
   logout: () => void;
   getUserExtendedData: () => UserExtendedData | null;
-  isLoggedIn: () => boolean;
-  isNotLoggedIn: () => boolean;
+  isLoggedIn: boolean;
+  isNotLoggedIn: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -54,7 +54,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const checkAuthStatus = () => {
       const token = localStorage.getItem('authToken');
       const userData = localStorage.getItem('userData');
-      
+
       if (token && userData) {
         try {
           const parsedUser = JSON.parse(userData);
@@ -73,11 +73,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = async (email: string, password: string): Promise<boolean> => {
     setIsLoading(true);
-    
+
     try {
       // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
       // Fake admin login validation
       if (email === 'admin@adminmail.com' && password === 'admin12345admin') {
         const adminUser: User = {
@@ -85,11 +85,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           email: 'admin@adminmail.com',
           name: 'Administrator',
         };
-        
+
         // Store auth data with admin token
         localStorage.setItem('authToken', 'admin-jwt-token-12345');
         localStorage.setItem('userData', JSON.stringify(adminUser));
-        
+
         // Store additional admin mock data
         const adminMockData = {
           role: 'admin',
@@ -104,7 +104,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           },
         };
         localStorage.setItem('adminData', JSON.stringify(adminMockData));
-        
+
         setUser(adminUser);
         setIsLoading(false);
         return true;
@@ -122,17 +122,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const signup = async (email: string, password: string, name: string): Promise<boolean> => {
     setIsLoading(true);
-    
+
     try {
       // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
       // Prevent signup with admin email
       if (email === 'admin@adminmail.com') {
         setIsLoading(false);
         return false; // This email is reserved
       }
-      
+
       // Mock validation for regular users
       if (email && password.length >= 6 && name) {
         const mockUser: User = {
@@ -140,11 +140,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           email,
           name,
         };
-        
+
         // Store auth data for regular user
         localStorage.setItem('authToken', 'user-jwt-token-' + Date.now());
         localStorage.setItem('userData', JSON.stringify(mockUser));
-        
+
         // Store regular user mock data
         const userMockData = {
           role: 'user',
@@ -159,7 +159,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           },
         };
         localStorage.setItem('userData_extended', JSON.stringify(userMockData));
-        
+
         setUser(mockUser);
         setIsLoading(false);
         return true;
@@ -184,7 +184,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const getUserExtendedData = (): UserExtendedData | null => {
     if (!user) return null;
-    
+
     try {
       // Check if user is admin
       if (user.email === 'admin@adminmail.com') {
@@ -200,11 +200,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const isLoggedIn = () => {
-    return !!localStorage.getItem('authToken') && !!localStorage.getItem('userData');
-  };
+  const isLoggedIn = useMemo(() => {
+    return user !== null;
+  }, [user]);
 
-  const isNotLoggedIn = () => !isLoggedIn();
+  const isNotLoggedIn = useMemo(() => !isLoggedIn, [isLoggedIn]);
 
   const value: AuthContextType = {
     user,
