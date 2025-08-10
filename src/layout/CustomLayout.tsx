@@ -173,9 +173,9 @@ interface ICustomLayoutProps {
 }
 
 const CustomLayout = ({ children }: ICustomLayoutProps) => {
-  const { user } = useAuth();
+  const { isNotLoggedIn } = useAuth();
 
-  if (user === null) {
+  if (isNotLoggedIn) {
     return <>
       {children}
     </>
