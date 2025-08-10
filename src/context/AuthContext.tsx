@@ -28,6 +28,7 @@ interface AuthContextType {
   logout: () => void;
   getUserExtendedData: () => UserExtendedData | null;
   isLoggedIn: () => boolean;
+  isNotLoggedIn: () => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -203,6 +204,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return !!localStorage.getItem('authToken') && !!localStorage.getItem('userData');
   };
 
+  const isNotLoggedIn = () => !isLoggedIn();
+
   const value: AuthContextType = {
     user,
     isAuthenticated: !!user,
@@ -212,6 +215,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     logout,
     getUserExtendedData,
     isLoggedIn,
+    isNotLoggedIn,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
