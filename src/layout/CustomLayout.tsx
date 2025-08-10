@@ -2,10 +2,11 @@ import React, { ReactNode, useEffect, useState } from 'react';
 import type { MenuDataItem } from '@ant-design/pro-components';
 import { PageContainer, ProLayout } from '@ant-design/pro-components';
 import { useLocation, Link } from 'react-router-dom';
-import { notification, Input, Select, Form, Button, Affix } from 'antd';
+import { notification, Input, Select, Form, Button, Affix, Dropdown, Avatar, Space, Badge, Tag } from 'antd';
 import { copyText } from 'copy-clipboard-js';
 import CopyOutlined from '@ant-design/icons/CopyOutlined';
-import { ReloadOutlined, SearchOutlined } from '@ant-design/icons';
+import { ReloadOutlined, SearchOutlined, UserOutlined, LogoutOutlined } from '@ant-design/icons';
+import { useAuth } from '../context/AuthContext';
 import logo from './logo.svg';
 
 const defaultMenus: MenuDataItem[] = [
@@ -172,6 +173,14 @@ interface ICustomLayoutProps {
 }
 
 const CustomLayout = ({ children }: ICustomLayoutProps) => {
+  const { user } = useAuth();
+
+  if (user === null) {
+    return <>
+      {children}
+    </>
+  }
+
   const location = useLocation();
 
   const [scrollPercent, setScrollPercent] = useState(0);
