@@ -6,6 +6,7 @@ import CrudTable from 'antd-crud-table';
 import { usePersistentState } from 'persistent-state-react';
 // @ts-ignore
 import { useFetch } from 'network-react';
+import { UserInfoCard } from '../common/UserInfoCard';
 import logo from './landing.svg';
 import styles from './Landing.module.scss';
 
@@ -68,8 +69,9 @@ const UserTable = () => {
     },
   });
   return (
-
-    <div style={{ textAlign: 'center' }}>
+    <div>
+      <UserInfoCard />
+      <div style={{ textAlign: 'center' }}>
       <header>
         <img src={logo} className="animate-spin h-10 mx-auto" alt="logo" />
         <div className="text-red-600">
@@ -159,6 +161,7 @@ const UserTable = () => {
           // },
         ]}
       />
+      </div>
     </div>
 
   );
