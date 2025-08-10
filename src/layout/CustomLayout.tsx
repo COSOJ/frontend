@@ -86,19 +86,11 @@ const CustomFooterMenu = ({ collapsed }: ICustomFooterMenuProps) => {
 
 const SearchBar = () => {
   const sections = ['whole', 'section1', 'section2', 'section3'];
-  const onFinish = (values: any) => {
-    console.log('Success:', values);
-  };
-  const onFinishFailed = (errorInfo: any) => {
-    console.log('Failed:', errorInfo);
-  };
   const [form] = Form.useForm();
   const [resetVisibility, setResetVisibility] = useState(true);
 
   const onValuesChange = (changedValues: any) => {
-    console.log('Form changed:', changedValues);
     const { range, keyword } = changedValues;
-    console.log('Search triggered with:', { range, keyword });
     setResetVisibility(range === undefined && (keyword === undefined || keyword === ''));
   };
 
@@ -107,8 +99,6 @@ const SearchBar = () => {
       form={form}
       layout="inline"
       onValuesChange={onValuesChange}
-      onFinish={onFinish}
-      onFinishFailed={onFinishFailed}
       autoComplete="on"
       style={{
         display: 'flex',
@@ -138,13 +128,9 @@ const SearchBar = () => {
           style={{ width: '100%' }}
         />
       </Form.Item>
-      <Form.Item
-        hidden={resetVisibility}
-      >
+      <Form.Item hidden={resetVisibility}>
         <Button
-          style={{
-            background: '#1677ff',
-          }}
+          style={{ background: '#1677ff' }}
           icon={<ReloadOutlined />}
           type="primary"
           onClick={() => form.resetFields()}
@@ -152,9 +138,7 @@ const SearchBar = () => {
       </Form.Item>
       <Form.Item>
         <Button
-          style={{
-            background: '#1677ff',
-          }}
+          style={{ background: '#1677ff' }}
           icon={<SearchOutlined />}
           type="primary"
           htmlType="submit"
@@ -174,15 +158,7 @@ interface ICustomLayoutProps {
 
 const CustomLayout = ({ children }: ICustomLayoutProps) => {
   const { isNotLoggedIn } = useAuth();
-
-  if (isNotLoggedIn) {
-    return <>
-      {children}
-    </>
-  }
-
   const location = useLocation();
-
   const [scrollPercent, setScrollPercent] = useState(0);
 
   useEffect(() => {
@@ -197,6 +173,10 @@ const CustomLayout = ({ children }: ICustomLayoutProps) => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  if (isNotLoggedIn) {
+    return <>{children}</>;
+  }
+
   return (
     <ProLayout
       logo={logo}
@@ -210,7 +190,6 @@ const CustomLayout = ({ children }: ICustomLayoutProps) => {
       route={{ routes: defaultMenus }}
       menuItemRender={renderMenuItem}
       subMenuItemRender={subMenuItemRender}
-      // eslint-disable-next-line
       menuFooterRender={(props) => <CustomFooterMenu {...props} />}
     >
       <PageContainer header={{ title: true }}>
@@ -231,9 +210,7 @@ const CustomLayout = ({ children }: ICustomLayoutProps) => {
             <SearchBar />
           </div>
         </Affix>
-        <div style={{ padding: 16, background: 'transparent' }}>
-          {children}
-        </div>
+        <div style={{ padding: 16, background: 'transparent' }}>{children}</div>
       </PageContainer>
     </ProLayout>
   );
