@@ -15,7 +15,7 @@ import { CustomLayout } from './layout/CustomLayout';
 import { LazyLanding } from './component/landing/LazyLanding';
 import { LazyPage2 } from './component/LazyPage2';
 import { LazyPage3 } from './component/LazyPage3';
-import Problem from './component/problem/Problem';
+import { LazyProblem } from './component/problem/LazyProblem';
 
 const DEFAULT_PAGE_LOGGED_IN = '/landing';
 const DEFAULT_PAGE_NOT_LOGGED_IN = '/login';
@@ -37,13 +37,7 @@ const AppBase = () => {
             {isNotLoggedIn && <Route path="/signup" element={<LazySignup />} />}
             {isLoggedIn && <Route path="/page2" element={<LazyPage2 />} />}
             {isLoggedIn && <Route path="/page3" element={<LazyPage3 />} />}
-            {isLoggedIn && <Route path="/problem" element={
-              <Problem
-                problemDescription='This is a sample problem description for the Problem component.'
-                tags={['Arrays', 'Data Structures']}
-                title='2D Array - DS'
-
-              />} />}
+            {isLoggedIn && <Route path="/problem" element={<LazyProblem />} />}
             <Route
               path="*"
               element={<Navigate to={isLoggedIn ? DEFAULT_PAGE_LOGGED_IN : DEFAULT_PAGE_NOT_LOGGED_IN} replace />}
