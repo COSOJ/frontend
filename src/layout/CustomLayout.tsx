@@ -26,6 +26,10 @@ const defaultMenus: MenuDataItem[] = [
         path: '/page3',
         name: 'Page 3',
       },
+      {
+        path: '/problem',
+        name: 'Problem UI',
+      },
     ],
   },
   {
