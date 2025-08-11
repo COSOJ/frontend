@@ -29,7 +29,7 @@ const AppBase = () => {
   const { isNotLoggedIn, isLoggedIn } = useAuth();
   return (
     <ConfigProvider locale={enUS}>
-      <BrowserRouter basename="/react-pipeline">
+      <BrowserRouter basename="/frontend">
         <CustomLayout>
           <Routes>
             {isLoggedIn && <Route path="/landing" element={<LazyLanding />} />}
