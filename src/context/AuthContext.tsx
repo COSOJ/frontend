@@ -50,26 +50,81 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check for stored authentication token on mount
-    const checkAuthStatus = () => {
-      const token = localStorage.getItem('authToken');
-      const userData = localStorage.getItem('userData');
+    // On mount, try to refresh token and fetch user info
+    const tryRestoreSession = async () => {
+      setIsLoading(true);
+      let token = localStorage.getItem('authToken');
+      let userData = localStorage.getItem('userData');
 
-      if (token && userData) {
+      // If no token, try to refresh
+      if (!token) {
         try {
-          const parsedUser = JSON.parse(userData);
-          setUser(parsedUser);
-        } catch (error) {
-          console.error('Error parsing stored user data:', error);
-          localStorage.removeItem('authToken');
-          localStorage.removeItem('userData');
+          const refreshRes = await fetch('/auth/refresh', {
+            method: 'POST',
+            credentials: 'include',
+          });
+          if (refreshRes.ok) {
+            const refreshData = await refreshRes.json();
+            if (refreshData.accessToken) {
+              token = refreshData.accessToken;
+              if (token) {
+                localStorage.setItem('authToken', token);
+              }
+            }
+          }
+        } catch (e) {
+          // ignore
         }
+      }
+
+      // If we have a token, fetch user info
+      if (token) {
+        try {
+          const meRes = await fetch('/auth/me', {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+            },
+            credentials: 'include',
+          });
+          if (meRes.ok) {
+            const user = await meRes.json();
+            setUser(user);
+            localStorage.setItem('userData', JSON.stringify(user));
+          } else {
+            setUser(null);
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('userData');
+          }
+        } catch (e) {
+          setUser(null);
+        }
+      } else {
+        setUser(null);
       }
       setIsLoading(false);
     };
-
-    checkAuthStatus();
+    tryRestoreSession();
   }, []);
+  // Optionally, expose a method to refresh token manually
+  const refreshToken = async (): Promise<boolean> => {
+    try {
+      const refreshRes = await fetch('/auth/refresh', {
+        method: 'POST',
+        credentials: 'include',
+      });
+      if (refreshRes.ok) {
+        const refreshData = await refreshRes.json();
+        if (refreshData.accessToken) {
+          localStorage.setItem('authToken', refreshData.accessToken);
+          return true;
+        }
+      }
+      return false;
+    } catch (e) {
+      return false;
+    }
+  };
 
   const login = async (email: string, password: string): Promise<boolean> => {
     setIsLoading(true);
@@ -167,6 +222,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     getUserExtendedData,
     isLoggedIn,
     isNotLoggedIn,
+    // Optionally, you can add refreshToken to context value if needed
+    // refreshToken,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
