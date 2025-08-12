@@ -73,43 +73,27 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = async (email: string, password: string): Promise<boolean> => {
     setIsLoading(true);
-
     try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // Fake admin login validation
-      if (email === 'admin@adminmail.com' && password === 'admin12345admin') {
-        const adminUser: User = {
-          id: 'admin-001',
-          email: 'admin@adminmail.com',
-          name: 'Administrator',
-        };
-
-        // Store auth data with admin token
-        localStorage.setItem('authToken', 'admin-jwt-token-12345');
-        localStorage.setItem('userData', JSON.stringify(adminUser));
-
-        // Store additional admin mock data
-        const adminMockData = {
-          role: 'admin',
-          permissions: ['read', 'write', 'delete', 'manage_users'],
-          lastLogin: new Date().toISOString(),
-          department: 'IT Administration',
-          avatar: null,
-          preferences: {
-            theme: 'light',
-            language: 'en',
-            notifications: true,
-          },
-        };
-        localStorage.setItem('adminData', JSON.stringify(adminMockData));
-
-        setUser(adminUser);
+      const response = await fetch('/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include', // send cookies for refresh token
+        body: JSON.stringify({ email, password }),
+      });
+      if (!response.ok) {
+        setIsLoading(false);
+        return false;
+      }
+      const data = await response.json();
+      if (data.accessToken && data.user) {
+        localStorage.setItem('authToken', data.accessToken);
+        localStorage.setItem('userData', JSON.stringify(data.user));
+        setUser(data.user);
         setIsLoading(false);
         return true;
       } else {
-        // Invalid credentials
         setIsLoading(false);
         return false;
       }
@@ -122,45 +106,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const signup = async (email: string, password: string, name: string): Promise<boolean> => {
     setIsLoading(true);
-
     try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // Prevent signup with admin email
-      if (email === 'admin@adminmail.com') {
+      const response = await fetch('/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ email, password, name }),
+      });
+      if (!response.ok) {
         setIsLoading(false);
-        return false; // This email is reserved
+        return false;
       }
-
-      // Mock validation for regular users
-      if (email && password.length >= 6 && name) {
-        const mockUser: User = {
-          id: Date.now().toString(),
-          email,
-          name,
-        };
-
-        // Store auth data for regular user
-        localStorage.setItem('authToken', 'user-jwt-token-' + Date.now());
-        localStorage.setItem('userData', JSON.stringify(mockUser));
-
-        // Store regular user mock data
-        const userMockData = {
-          role: 'user',
-          permissions: ['read'],
-          lastLogin: new Date().toISOString(),
-          department: 'General',
-          avatar: null,
-          preferences: {
-            theme: 'light',
-            language: 'en',
-            notifications: true,
-          },
-        };
-        localStorage.setItem('userData_extended', JSON.stringify(userMockData));
-
-        setUser(mockUser);
+      const data = await response.json();
+      if (data.accessToken && data.user) {
+        localStorage.setItem('authToken', data.accessToken);
+        localStorage.setItem('userData', JSON.stringify(data.user));
+        setUser(data.user);
         setIsLoading(false);
         return true;
       } else {
@@ -177,27 +140,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const logout = () => {
     localStorage.removeItem('authToken');
     localStorage.removeItem('userData');
-    localStorage.removeItem('adminData');
-    localStorage.removeItem('userData_extended');
     setUser(null);
+    // Optionally, call a logout endpoint to clear refresh token cookie
+    fetch('/auth/logout', { method: 'POST', credentials: 'include' }).catch(() => {});
   };
 
+  // Optionally, fetch extended user data from backend if available
   const getUserExtendedData = (): UserExtendedData | null => {
-    if (!user) return null;
-
-    try {
-      // Check if user is admin
-      if (user.email === 'admin@adminmail.com') {
-        const adminData = localStorage.getItem('adminData');
-        return adminData ? JSON.parse(adminData) : null;
-      } else {
-        const userData = localStorage.getItem('userData_extended');
-        return userData ? JSON.parse(userData) : null;
-      }
-    } catch (error) {
-      console.error('Error parsing extended user data:', error);
-      return null;
-    }
+    // Not implemented: should fetch from backend if needed
+    return null;
   };
 
   const isLoggedIn = useMemo(() => {
