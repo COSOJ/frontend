@@ -45,6 +45,8 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
+const API_BASE = 'http://localhost:3000';
+
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -59,7 +61,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // If no token, try to refresh
       if (!token) {
         try {
-          const refreshRes = await fetch('/auth/refresh', {
+          const refreshRes = await fetch(`${API_BASE}/auth/refresh`, {
             method: 'POST',
             credentials: 'include',
           });
@@ -80,7 +82,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // If we have a token, fetch user info
       if (token) {
         try {
-          const meRes = await fetch('/auth/me', {
+          const meRes = await fetch(`${API_BASE}/auth/me`, {
             method: 'GET',
             headers: {
               'Authorization': `Bearer ${token}`,
@@ -109,7 +111,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Optionally, expose a method to refresh token manually
   const refreshToken = async (): Promise<boolean> => {
     try {
-      const refreshRes = await fetch('/auth/refresh', {
+      const refreshRes = await fetch(`${API_BASE}/auth/refresh`, {
         method: 'POST',
         credentials: 'include',
       });
@@ -129,7 +131,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const login = async (email: string, password: string): Promise<boolean> => {
     setIsLoading(true);
     try {
-      const response = await fetch('/auth/login', {
+      const response = await fetch(`${API_BASE}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -162,7 +164,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const signup = async (email: string, password: string, name: string): Promise<boolean> => {
     setIsLoading(true);
     try {
-      const response = await fetch('/auth/register', {
+      const response = await fetch(`${API_BASE}/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -197,7 +199,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     localStorage.removeItem('userData');
     setUser(null);
     // Optionally, call a logout endpoint to clear refresh token cookie
-    fetch('/auth/logout', { method: 'POST', credentials: 'include' }).catch(() => {});
+    fetch(`${API_BASE}/auth/logout`, { method: 'POST', credentials: 'include' }).catch(() => {});
   };
 
   // Optionally, fetch extended user data from backend if available
