@@ -15,6 +15,10 @@ const defaultMenus: MenuDataItem[] = [
     name: 'Problems',
   },
   {
+    path: '/submissions',
+    name: 'Submissions',
+  },
+  {
     path: '/',
     name: 'Pages',
     children: [
