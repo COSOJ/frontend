@@ -1,5 +1,11 @@
 const API_BASE = 'http://localhost:3000';
 
+export interface TestCase {
+  input: string;
+  output: string;
+  isPublic: boolean;
+}
+
 export interface Problem {
   _id: string;
   code: string;
@@ -10,7 +16,7 @@ export interface Problem {
   memoryLimitMb: number;
   inputSpec: string;
   outputSpec: string;
-  samples: Record<string, string>[];
+  cases: TestCase[];
   tags: string[];
   visibility: 'public' | 'private';
   createdAt: string;
@@ -26,7 +32,7 @@ export interface CreateProblemDto {
   memoryLimitMb: number;
   inputSpec: string;
   outputSpec: string;
-  samples: Record<string, string>[];
+  cases: TestCase[];
   tags: string[];
   visibility?: 'public' | 'private';
 }
