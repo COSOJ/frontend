@@ -32,8 +32,8 @@ const Problem = () => {
       setProblem(problemData);
       
       // Set sample input if available
-      if (problemData.samples && problemData.samples.length > 0) {
-        setStdin(problemData.samples[0].input || '');
+      if (problemData.cases && problemData.cases.length > 0) {
+        setStdin(problemData.cases[0].input || '');
       }
     } catch (error) {
       message.error('Failed to load problem');
@@ -150,12 +150,15 @@ const Problem = () => {
             </Paragraph>
           </div>
 
-          {problem.samples && problem.samples.length > 0 && (
+          {problem.cases && problem.cases.length > 0 && (
             <div>
               <Title level={5}>Sample Test Cases</Title>
-              {problem.samples.map((sample, index) => (
+              {problem.cases.map((testCase, index) => (
                 <div key={index} style={{ marginBottom: 16 }}>
                   <Text strong>Sample {index + 1}</Text>
+                  {!testCase.isPublic && (
+                    <Tag color="orange" style={{ marginLeft: 8 }}>Hidden</Tag>
+                  )}
                   <div style={{ display: 'flex', gap: 16, marginTop: 8 }}>
                     <div style={{ flex: 1 }}>
                       <Text type="secondary">Input:</Text>
@@ -166,7 +169,7 @@ const Problem = () => {
                         fontFamily: 'monospace',
                         whiteSpace: 'pre-wrap'
                       }}>
-                        {sample.input}
+                        {testCase.input}
                       </div>
                     </div>
                     <div style={{ flex: 1 }}>
@@ -178,7 +181,7 @@ const Problem = () => {
                         fontFamily: 'monospace',
                         whiteSpace: 'pre-wrap'
                       }}>
-                        {sample.output}
+                        {testCase.output}
                       </div>
                     </div>
                   </div>
