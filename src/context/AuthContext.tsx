@@ -1,9 +1,15 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo } from 'react';
 
 interface User {
-  id: string;
+  _id: string;
+  handle: string;
   email: string;
-  name: string;
+  roles: Array<'superadmin' | 'admin' | 'user' | 'spectetor'>;
+  rating: number;
+  ratingHistory: number[];
+  avatarUrl?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface UserExtendedData {
@@ -24,7 +30,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<boolean>;
-  signup: (email: string, password: string, name: string) => Promise<boolean>;
+  signup: (email: string, password: string, handle: string) => Promise<boolean>;
   logout: () => void;
   getUserExtendedData: () => UserExtendedData | null;
   isLoggedIn: boolean;
@@ -161,7 +167,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const signup = async (email: string, password: string, name: string): Promise<boolean> => {
+  const signup = async (email: string, password: string, handle: string): Promise<boolean> => {
     setIsLoading(true);
     try {
       const response = await fetch(`${API_BASE}/auth/register`, {
@@ -170,7 +176,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           'Content-Type': 'application/json',
         },
         credentials: 'include',
-        body: JSON.stringify({ email, password, name }),
+        body: JSON.stringify({ email, password, handle }),
       });
       if (!response.ok) {
         setIsLoading(false);
