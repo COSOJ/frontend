@@ -11,6 +11,10 @@ import logo from './logo.svg';
 
 const defaultMenus: MenuDataItem[] = [
   {
+    path: '/problems',
+    name: 'Problems',
+  },
+  {
     path: '/',
     name: 'Pages',
     children: [
@@ -25,10 +29,6 @@ const defaultMenus: MenuDataItem[] = [
       {
         path: '/page3',
         name: 'Page 3',
-      },
-      {
-        path: '/problem',
-        name: 'Problem UI',
       },
     ],
   },
