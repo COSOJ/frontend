@@ -7,7 +7,7 @@ import { useAuth } from '../../context/AuthContext';
 const { Title, Text } = Typography;
 
 interface SignupFormValues {
-  name: string;
+  handle: string;
   email: string;
   password: string;
   confirmPassword: string;
@@ -25,7 +25,7 @@ export const Signup: React.FC = () => {
         return;
       }
       
-      const success = await signup(values.email, values.password, values.name);
+      const success = await signup(values.email, values.password, values.handle);
       
       if (success) {
         message.success('Account created successfully!');
@@ -81,16 +81,18 @@ export const Signup: React.FC = () => {
           requiredMark={false}
         >
           <Form.Item
-            name="name"
-            label="Full Name"
+            name="handle"
+            label="Username"
             rules={[
-              { required: true, message: 'Please input your full name!' },
-              { min: 2, message: 'Name must be at least 2 characters!' },
+              { required: true, message: 'Please input your username!' },
+              { min: 3, message: 'Username must be at least 3 characters!' },
+              { max: 20, message: 'Username must be less than 20 characters!' },
+              { pattern: /^[a-zA-Z0-9_]+$/, message: 'Username can only contain letters, numbers, and underscores!' },
             ]}
           >
             <Input
               prefix={<UserOutlined />}
-              placeholder="Enter your full name"
+              placeholder="Enter your username"
               size="large"
             />
           </Form.Item>
