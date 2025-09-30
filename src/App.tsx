@@ -18,6 +18,7 @@ import { LazyPage3 } from './component/LazyPage3';
 import { LazyProblem } from './component/problem/LazyProblem';
 import { LazyProblemList } from './component/problem/LazyProblemList';
 import { ProblemForm } from './component/problem/ProblemForm';
+import LazySubmissionsPage from './component/submission/LazySubmissionsPage';
 
 const DEFAULT_PAGE_LOGGED_IN = '/landing';
 const DEFAULT_PAGE_NOT_LOGGED_IN = '/login';
@@ -55,8 +56,9 @@ const AppBase = () => {
               {isNotLoggedIn && <Route path="/signup" element={<LazySignup />} />}
               {isLoggedIn && <Route path="/page2" element={<LazyPage2 />} />}
               {isLoggedIn && <Route path="/page3" element={<LazyPage3 />} />}
-              {isLoggedIn && <Route path="/problems" element={<LazyProblemList />} />}
-              {isLoggedIn && <Route path="/problem/:id" element={<LazyProblem />} />}
+              <Route path="/problems" element={<LazyProblemList />} />
+              <Route path="/problem/:id" element={<LazyProblem />} />
+              <Route path="/submissions" element={<LazySubmissionsPage />} />
               {isLoggedIn && <Route path="/admin/problems/create" element={<CreateProblemForm />} />}
               {isLoggedIn && <Route path="/admin/problems/:id/edit" element={<EditProblemForm />} />}
               <Route
