@@ -21,7 +21,7 @@ export const UserInfoCard: React.FC = () => {
       title={
         <Space>
           {isAdmin ? <CrownOutlined style={{ color: '#faad14' }} /> : <UserOutlined />}
-          <span>Welcome, {user.name}!</span>
+          <span>Welcome, {user.handle}!</span>
           <Tag color={isAdmin ? 'gold' : 'blue'}>
             {userExtendedData.role.toUpperCase()}
           </Tag>
