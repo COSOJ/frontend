@@ -12,7 +12,8 @@ import {
   Row,
   Col,
   Typography,
-  Divider
+  Divider,
+  Switch
 } from 'antd';
 import { PlusOutlined, MinusCircleOutlined } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -45,7 +46,7 @@ export const ProblemForm: React.FC<ProblemFormProps> = ({ mode }) => {
       const problem = await problemService.getProblem(problemId);
       form.setFieldsValue({
         ...problem,
-        samples: problem.samples || [{ input: '', output: '' }]
+        cases: problem.cases || [{ input: '', output: '', isPublic: true }]
       });
     } catch (error) {
       message.error('Failed to load problem');
@@ -60,10 +61,10 @@ export const ProblemForm: React.FC<ProblemFormProps> = ({ mode }) => {
   const onFinish = async (values: CreateProblemDto) => {
     setLoading(true);
     try {
-      // Transform samples back to the expected format
+      // Transform cases back to the expected format
       const formattedValues = {
         ...values,
-        samples: values.samples || []
+        cases: values.cases || []
       };
 
       if (mode === 'create') {
@@ -103,7 +104,7 @@ export const ProblemForm: React.FC<ProblemFormProps> = ({ mode }) => {
           memoryLimitMb: 256,
           visibility: 'private',
           tags: [],
-          samples: [{ input: '', output: '' }]
+          cases: [{ input: '', output: '', isPublic: true }]
         }}
       >
         <Row gutter={16}>
@@ -218,25 +219,39 @@ export const ProblemForm: React.FC<ProblemFormProps> = ({ mode }) => {
           </Select>
         </Form.Item>
 
-        <Divider>Sample Test Cases</Divider>
+        <Divider>Test Cases</Divider>
         
-        <Form.List name="samples">
+        <Form.List name="cases">
           {(fields, { add, remove }) => (
             <>
               {fields.map(({ key, name, ...restField }) => (
                 <Card
                   key={key}
                   size="small"
-                  title={`Sample ${name + 1}`}
+                  title={`Test Case ${name + 1}`}
                   extra={
-                    fields.length > 1 && (
-                      <Button
-                        type="text"
-                        danger
-                        icon={<MinusCircleOutlined />}
-                        onClick={() => remove(name)}
-                      />
-                    )
+                    <Space>
+                      <Form.Item
+                        {...restField}
+                        name={[name, 'isPublic']}
+                        valuePropName="checked"
+                        noStyle
+                      >
+                        <Switch 
+                          checkedChildren="Public" 
+                          unCheckedChildren="Hidden"
+                          size="small"
+                        />
+                      </Form.Item>
+                      {fields.length > 1 && (
+                        <Button
+                          type="text"
+                          danger
+                          icon={<MinusCircleOutlined />}
+                          onClick={() => remove(name)}
+                        />
+                      )}
+                    </Space>
                   }
                   style={{ marginBottom: 16 }}
                 >
@@ -246,9 +261,9 @@ export const ProblemForm: React.FC<ProblemFormProps> = ({ mode }) => {
                         {...restField}
                         name={[name, 'input']}
                         label="Input"
-                        rules={[{ required: true, message: 'Please enter sample input!' }]}
+                        rules={[{ required: true, message: 'Please enter test case input!' }]}
                       >
-                        <TextArea rows={3} placeholder="Sample input..." />
+                        <TextArea rows={3} placeholder="Test case input..." />
                       </Form.Item>
                     </Col>
                     <Col span={12}>
@@ -267,11 +282,11 @@ export const ProblemForm: React.FC<ProblemFormProps> = ({ mode }) => {
               <Form.Item>
                 <Button
                   type="dashed"
-                  onClick={() => add()}
+                  onClick={() => add({ input: '', output: '', isPublic: true })}
                   block
                   icon={<PlusOutlined />}
                 >
-                  Add Sample Test Case
+                  Add Test Case
                 </Button>
               </Form.Item>
             </>
