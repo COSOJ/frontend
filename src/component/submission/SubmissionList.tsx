@@ -50,6 +50,8 @@ const SubmissionList: React.FC<SubmissionListProps> = ({
 }) => {
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(false);
+  const [sourceCodeLoading, setSourceCodeLoading] = useState(false);
+  const [sourceCode, setSourceCode] = useState<string>('');
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 10,
@@ -108,6 +110,18 @@ const SubmissionList: React.FC<SubmissionListProps> = ({
       const fullSubmission = await submissionService.getSubmission(submission._id);
       setSelectedSubmission(fullSubmission);
       setDetailModalVisible(true);
+      
+      // Load source code separately
+      setSourceCodeLoading(true);
+      try {
+        const code = await submissionService.getSubmissionSourceCode(submission._id);
+        setSourceCode(code);
+      } catch (error: any) {
+        message.error('Failed to load source code');
+        setSourceCode('// Failed to load source code');
+      } finally {
+        setSourceCodeLoading(false);
+      }
     } catch (error: any) {
       message.error(error.message || 'Failed to fetch submission details');
     }
@@ -352,7 +366,11 @@ const SubmissionList: React.FC<SubmissionListProps> = ({
           </Space>
         }
         open={detailModalVisible}
-        onCancel={() => setDetailModalVisible(false)}
+        onCancel={() => {
+          setDetailModalVisible(false);
+          setSourceCode('');
+          setSelectedSubmission(null);
+        }}
         footer={null}
         width={800}
       >
@@ -410,17 +428,23 @@ const SubmissionList: React.FC<SubmissionListProps> = ({
             )}
 
             <Card title="Source Code" size="small">
-              <pre style={{ 
-                background: '#f5f5f5',
-                padding: '12px',
-                borderRadius: '4px',
-                overflow: 'auto',
-                maxHeight: '400px',
-                fontSize: '13px',
-                fontFamily: 'monospace'
-              }}>
-                {selectedSubmission.code}
-              </pre>
+              {sourceCodeLoading ? (
+                <Spin tip="Loading source code...">
+                  <div style={{ height: 200 }} />
+                </Spin>
+              ) : (
+                <pre style={{ 
+                  background: '#f5f5f5',
+                  padding: '12px',
+                  borderRadius: '4px',
+                  overflow: 'auto',
+                  maxHeight: '400px',
+                  fontSize: '13px',
+                  fontFamily: 'monospace'
+                }}>
+                  {sourceCode || '// No source code available'}
+                </pre>
+              )}
             </Card>
           </Space>
         )}
