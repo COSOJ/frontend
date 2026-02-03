@@ -19,6 +19,15 @@ export enum ProgrammingLanguage {
   C = 'c'
 }
 
+export interface FileReference {
+  bucket: string;
+  key: string;
+  originalName: string;
+  mimeType: string;
+  size: number;
+  uploadedAt: string;
+}
+
 export interface Submission {
   _id: string;
   user: {
@@ -34,7 +43,7 @@ export interface Submission {
   verdict: SubmissionVerdict;
   timeUsedMs: number;
   memoryUsedKb: number;
-  code: string;
+  sourceFile: FileReference;
   errorMessage?: string;
   testCasesPassed: number;
   totalTestCases: number;
@@ -139,6 +148,21 @@ class SubmissionService {
     }
     
     return response.json();
+  }
+
+  async getSubmissionSourceCode(id: string): Promise<string> {
+    const response = await fetch(`${API_BASE}/submissions/${id}/source`, {
+      method: 'GET',
+      headers: this.getAuthHeaders(),
+      credentials: 'include',
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch submission source code');
+    }
+    
+    const data = await response.json();
+    return data.sourceCode;
   }
 
   async getSubmissionsByProblem(problemId: string): Promise<Submission[]> {
