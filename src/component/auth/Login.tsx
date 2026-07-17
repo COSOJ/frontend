@@ -144,24 +144,6 @@ export const Login: React.FC = () => {
             </Link>
           </Text>
         </div>
-
-        <div style={{ textAlign: 'center', marginTop: '16px' }}>
-          <Text
-            type="secondary"
-            style={{
-              fontSize: '12px',
-              display: 'block',
-              padding: '8px',
-              background: '#e6f7ff',
-              borderRadius: '4px',
-              border: '1px solid #91d5ff',
-            }}
-          >
-            <strong>Admin Login:</strong><br />
-            Email: admin@adminmail.com<br />
-            Password: admin12345admin
-          </Text>
-        </div>
       </Card>
     </div>
   );
