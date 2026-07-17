@@ -1,35 +1,41 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  Table, 
-  Tag, 
-  Card, 
-  Space, 
-  Button, 
-  Select, 
+import React, { useState, useEffect, useRef } from 'react';
+import {
+  Table,
+  Tag,
+  Card,
+  Space,
+  Button,
+  Select,
   Input,
   message,
   Typography,
   Tooltip,
   Modal,
   Descriptions,
-  Spin
+  Spin,
+  Badge
 } from 'antd';
-import { 
-  EyeOutlined, 
-  ReloadOutlined, 
+import {
+  EyeOutlined,
+  ReloadOutlined,
   FilterOutlined,
   CodeOutlined,
   ClockCircleOutlined,
-  DatabaseOutlined
+  DatabaseOutlined,
+  LoadingOutlined
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
-import { 
-  submissionService, 
-  Submission, 
-  SubmissionVerdict, 
+import {
+  submissionService,
+  Submission,
+  SubmissionVerdict,
   ProgrammingLanguage,
-  SubmissionQueryParams 
+  SubmissionQueryParams,
+  isVerdictInProgress
 } from '../../service/submissionService';
+
+// How often to re-poll while any submission is still being judged.
+const POLL_INTERVAL_MS = 2500;
 
 const { Option } = Select;
 const { Search } = Input;
@@ -65,12 +71,23 @@ const SubmissionList: React.FC<SubmissionListProps> = ({
   const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null);
   const [detailModalVisible, setDetailModalVisible] = useState(false);
 
-  const fetchSubmissions = async (params: SubmissionQueryParams = {}) => {
+  // Refs so the polling interval always sees the latest fetch + view state
+  // without re-subscribing on every render.
+  const fetchRef = useRef<
+    (params?: SubmissionQueryParams, options?: { silent?: boolean }) => Promise<void>
+  >(async () => undefined);
+  const viewRef = useRef({ current: 1, pageSize: 10 });
+  viewRef.current = { current: pagination.current, pageSize: pagination.pageSize };
+
+  const fetchSubmissions = async (
+    params: SubmissionQueryParams = {},
+    options: { silent?: boolean } = {}
+  ) => {
     try {
-      setLoading(true);
+      if (!options.silent) setLoading(true);
       const queryParams = { ...filters, ...params };
       const response = await submissionService.getSubmissions(queryParams);
-      
+
       setSubmissions(response.items);
       setPagination({
         current: response.current,
@@ -79,15 +96,35 @@ const SubmissionList: React.FC<SubmissionListProps> = ({
         totalPages: response.totalPages
       });
     } catch (error: any) {
-      message.error(error.message || 'Failed to fetch submissions');
+      if (!options.silent) {
+        message.error(error.message || 'Failed to fetch submissions');
+      }
     } finally {
-      setLoading(false);
+      if (!options.silent) setLoading(false);
     }
   };
+  fetchRef.current = fetchSubmissions;
 
   useEffect(() => {
     fetchSubmissions();
   }, [problemId, userId]);
+
+  // Auto-poll while any submission on the current page is still being judged,
+  // so verdicts update live without the user hitting refresh.
+  const hasInProgress = submissions.some((s) => isVerdictInProgress(s.verdict));
+  useEffect(() => {
+    if (!hasInProgress) return undefined;
+    const id = setInterval(() => {
+      fetchRef.current(
+        {
+          current: viewRef.current.current,
+          pageSize: viewRef.current.pageSize
+        },
+        { silent: true }
+      );
+    }, POLL_INTERVAL_MS);
+    return () => clearInterval(id);
+  }, [hasInProgress]);
 
   const handleTableChange = (page: number, size?: number) => {
     const newParams = {
@@ -208,7 +245,10 @@ const SubmissionList: React.FC<SubmissionListProps> = ({
       key: 'verdict',
       width: 150,
       render: (verdict: SubmissionVerdict) => (
-        <Tag color={submissionService.getVerdictColor(verdict)}>
+        <Tag
+          color={submissionService.getVerdictColor(verdict)}
+          icon={isVerdictInProgress(verdict) ? <LoadingOutlined /> : undefined}
+        >
           {submissionService.getVerdictText(verdict)}
         </Tag>
       ),
@@ -304,13 +344,18 @@ const SubmissionList: React.FC<SubmissionListProps> = ({
           </Space>
         }
         extra={
-          <Button 
-            icon={<ReloadOutlined />} 
-            onClick={() => fetchSubmissions()}
-            loading={loading}
-          >
-            Refresh
-          </Button>
+          <Space>
+            {hasInProgress && (
+              <Badge status="processing" text="Live — judging in progress" />
+            )}
+            <Button
+              icon={<ReloadOutlined />}
+              onClick={() => fetchSubmissions()}
+              loading={loading}
+            >
+              Refresh
+            </Button>
+          </Space>
         }
       >
         <Space direction="vertical" style={{ width: '100%' }} size="middle">
