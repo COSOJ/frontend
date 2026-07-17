@@ -22,6 +22,7 @@ const Problem = () => {
   const [running, setRunning] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [activeTab, setActiveTab] = useState("problem");
+  const [outputTab, setOutputTab] = useState("input");
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuth();
@@ -109,14 +110,49 @@ int main() {
     return 'Hard';
   };
 
-  function fakeRun() {
+  const runStatusLabel = (status: string): string => {
+    switch (status) {
+      case 'ok':
+        return 'Finished';
+      case 'compile_error':
+        return 'Compilation Error';
+      case 'runtime_error':
+        return 'Runtime Error';
+      case 'time_limit_exceeded':
+        return 'Time Limit Exceeded';
+      case 'memory_limit_exceeded':
+        return 'Memory Limit Exceeded';
+      default:
+        return 'Execution Error';
+    }
+  };
+
+  const handleRun = async () => {
+    if (!isAuthenticated) {
+      message.warning('Please login to run code');
+      return;
+    }
+    if (!code.trim()) {
+      message.warning('Please write some code before running');
+      return;
+    }
     setRunning(true);
-    setStdout("");
-    setTimeout(() => {
-      setStdout("(demo) Code executed successfully.\nOutput: Hello World!\n");
+    setOutputTab('output');
+    setStdout('Running…');
+    try {
+      const result = await submissionService.runSolution(language, code, stdin);
+      const parts: string[] = [`# ${runStatusLabel(result.status)} `
+        + `(${result.timeMs}ms, ${(result.memoryKb / 1024).toFixed(1)}MB)`];
+      if (result.stdout) parts.push(result.stdout.replace(/\n$/, ''));
+      if (result.stderr) parts.push(`\n[stderr]\n${result.stderr.replace(/\n$/, '')}`);
+      if (!result.stdout && !result.stderr) parts.push('(no output)');
+      setStdout(parts.join('\n'));
+    } catch (error: any) {
+      setStdout(`Failed to run: ${error.message || 'unknown error'}`);
+    } finally {
       setRunning(false);
-    }, 700);
-  }
+    }
+  };
 
   const handleSubmit = async () => {
     if (!isAuthenticated) {
@@ -332,11 +368,12 @@ int main() {
                             { value: ProgrammingLanguage.C, label: "C" },
                           ]}
                         />
-                        <Button 
-                          icon={<PlayCircleOutlined />} 
-                          onClick={fakeRun} 
-                          loading={running} 
+                        <Button
+                          icon={<PlayCircleOutlined />}
+                          onClick={handleRun}
+                          loading={running}
                           style={{ marginRight: 8 }}
+                          disabled={!isAuthenticated}
                         >
                           Run
                         </Button>
@@ -366,7 +403,7 @@ int main() {
                   </Card>
 
                   <Card style={{ marginTop: 16 }}>
-                    <Tabs defaultActiveKey="input">
+                    <Tabs activeKey={outputTab} onChange={setOutputTab}>
                       <Tabs.TabPane tab="Custom Input" key="input">
                         <Input.TextArea
                           value={stdin}
