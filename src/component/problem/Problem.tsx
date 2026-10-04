@@ -1,60 +1,31 @@
-import React, { useState, useEffect, startTransition } from "react";
-import { Layout, Card, Divider, Typography, Tag, Button, Select, Input, Tabs, Spin, message } from "antd";
-import { CodeOutlined, PlayCircleOutlined, CloudUploadOutlined, ClockCircleOutlined, DatabaseOutlined, SendOutlined, HistoryOutlined } from "@ant-design/icons";
-import { useParams, useNavigate } from "react-router-dom";
-import Editor from "@monaco-editor/react";
-import { Problem as ProblemType, problemService } from "../../service/problemService";
-import { useAuth } from "../../context/AuthContext";
-import LazySubmissionForm from "../submission/LazySubmissionForm";
-import LazySubmissionList from "../submission/LazySubmissionList";
-import { ProgrammingLanguage, CreateSubmissionDto, submissionService } from "../../service/submissionService";
+import React, { useState, useEffect, startTransition } from 'react';
+import { Layout, Card, Divider, Typography, Tag, Button, Select, Input, Tabs, Spin, message } from 'antd';
+import { CodeOutlined, PlayCircleOutlined, ClockCircleOutlined, DatabaseOutlined, SendOutlined, HistoryOutlined } from '@ant-design/icons';
+import { useParams, useNavigate } from 'react-router-dom';
+import Editor from '@monaco-editor/react';
+import { Problem as ProblemType, problemService } from '../../service/problemService';
+import { useAuth } from '../../context/AuthContext';
+import { LazySubmissionForm } from '../submission/LazySubmissionForm';
+import { LazySubmissionList } from '../submission/LazySubmissionList';
+import { ProgrammingLanguage, CreateSubmissionDto, submissionService } from '../../service/submissionService';
 
 const { Content } = Layout;
-const { Title, Paragraph, Text } = Typography;
+const { Title } = Typography;
 
-const Problem = () => {
+const Problem: React.FC = () => {
   const [problem, setProblem] = useState<ProblemType | null>(null);
   const [loading, setLoading] = useState(true);
   const [language, setLanguage] = useState<ProgrammingLanguage>(ProgrammingLanguage.CPP);
-  const [code, setCode] = useState("");
-  const [stdin, setStdin] = useState("");
-  const [stdout, setStdout] = useState("");
+  const [code, setCode] = useState('');
+  const [stdin, setStdin] = useState('');
+  const [stdout, setStdout] = useState('');
   const [running, setRunning] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [activeTab, setActiveTab] = useState("problem");
-  const [outputTab, setOutputTab] = useState("input");
+  const [activeTab, setActiveTab] = useState('problem');
+  const [outputTab, setOutputTab] = useState('input');
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { user, isAuthenticated } = useAuth();
-
-  useEffect(() => {
-    if (id) {
-      loadProblem(id);
-    }
-  }, [id]);
-
-  const loadProblem = async (problemId: string) => {
-    setLoading(true);
-    try {
-      const problemData = await problemService.getProblem(problemId);
-      setProblem(problemData);
-      
-      // Set sample input if available
-      if (problemData.cases && problemData.cases.length > 0) {
-        setStdin(problemData.cases[0].input || '');
-      }
-
-      // Set default code template based on language
-      setCodeTemplate(language);
-    } catch (error) {
-      message.error('Failed to load problem');
-      startTransition(() => {
-        navigate('/problems');
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { isAuthenticated } = useAuth();
 
   const setCodeTemplate = (selectedLanguage: ProgrammingLanguage) => {
     const templates = {
@@ -92,11 +63,40 @@ solve();`,
 int main() {
     // Your solution here
     return 0;
-}`
+}`,
     };
-    
+
     setCode(templates[selectedLanguage] || '');
   };
+
+  const loadProblem = async (problemId: string) => {
+    setLoading(true);
+    try {
+      const problemData = await problemService.getProblem(problemId);
+      setProblem(problemData);
+
+      // Set sample input if available
+      if (problemData.cases && problemData.cases.length > 0) {
+        setStdin(problemData.cases[0].input || '');
+      }
+
+      // Set default code template based on language
+      setCodeTemplate(language);
+    } catch (error) {
+      message.error('Failed to load problem');
+      startTransition(() => {
+        navigate('/problems');
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (id) {
+      loadProblem(id);
+    }
+  }, [id]);
 
   const getDifficultyColor = (difficulty: number) => {
     if (difficulty <= 3) return 'green';
@@ -172,19 +172,18 @@ int main() {
 
     try {
       setSubmitting(true);
-      
+
       const submissionData: CreateSubmissionDto = {
         problem: problem._id,
-        language: language,
-        code: code
+        language,
+        code,
       };
-      
+
       await submissionService.submitSolution(submissionData);
       message.success('Solution submitted successfully!');
-      
+
       // Switch to submissions tab to show the new submission
       setActiveTab('submissions');
-      
     } catch (error: any) {
       message.error(error.message || 'Failed to submit solution');
     } finally {
@@ -195,6 +194,16 @@ int main() {
   const handleLanguageChange = (newLanguage: ProgrammingLanguage) => {
     setLanguage(newLanguage);
     setCodeTemplate(newLanguage);
+  };
+
+  const handleBackToProblems = () => {
+    startTransition(() => {
+      navigate('/problems');
+    });
+  };
+
+  const handleSubmissionCreated = () => {
+    setActiveTab('submissions');
   };
 
   const getMonacoLanguage = (lang: ProgrammingLanguage): string => {
@@ -215,7 +224,7 @@ int main() {
 
   if (loading) {
     return (
-      <Layout style={{ height: "100vh" }}>
+      <Layout style={{ height: '100vh' }}>
         <Content style={{ padding: 24, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
           <Spin size="large" />
         </Content>
@@ -225,15 +234,14 @@ int main() {
 
   if (!problem) {
     return (
-      <Layout style={{ height: "100vh" }}>
+      <Layout style={{ height: '100vh' }}>
         <Content style={{ padding: 24 }}>
           <div style={{ textAlign: 'center' }}>
             <Title level={3}>Problem not found</Title>
-            <Button type="primary" onClick={() => {
-              startTransition(() => {
-                navigate('/problems');
-              });
-            }}>
+            <Button
+              type="primary"
+              onClick={handleBackToProblems}
+            >
               Back to Problems
             </Button>
           </div>
@@ -243,10 +251,10 @@ int main() {
   }
 
   return (
-    <Layout style={{ height: "100%" }}>
+    <Layout style={{ height: '100%' }}>
       <Content style={{ padding: 12 }}>
-        <Tabs 
-          activeKey={activeTab} 
+        <Tabs
+          activeKey={activeTab}
           onChange={setActiveTab}
           items={[
             {
@@ -287,9 +295,9 @@ int main() {
                         </div>
                       </div>
                     </div>
-                    
+
                     <Divider />
-                    
+
                     <div style={{ marginBottom: 24 }}>
                       <Title level={5}>Problem Statement</Title>
                       <Typography.Paragraph style={{ whiteSpace: 'pre-wrap' }}>
@@ -315,7 +323,10 @@ int main() {
                       <div>
                         <Title level={5}>Sample Test Cases</Title>
                         {problem.cases.map((testCase, index) => (
-                          <div key={index} style={{ marginBottom: 16 }}>
+                          <div
+                            key={`${testCase.input}-${testCase.output}-${testCase.isPublic}`}
+                            style={{ marginBottom: 16 }}
+                          >
                             <Typography.Text strong>Sample {index + 1}</Typography.Text>
                             {!testCase.isPublic && (
                               <Tag color="orange" style={{ marginLeft: 8 }}>Hidden</Tag>
@@ -323,25 +334,27 @@ int main() {
                             <div style={{ display: 'flex', gap: 16, marginTop: 8 }}>
                               <div style={{ flex: 1 }}>
                                 <Typography.Text type="secondary">Input:</Typography.Text>
-                                <div style={{ 
-                                  background: '#f5f5f5', 
-                                  padding: 8, 
-                                  borderRadius: 4, 
+                                <div style={{
+                                  background: '#f5f5f5',
+                                  padding: 8,
+                                  borderRadius: 4,
                                   fontFamily: 'monospace',
-                                  whiteSpace: 'pre-wrap'
-                                }}>
+                                  whiteSpace: 'pre-wrap',
+                                }}
+                                >
                                   {testCase.input}
                                 </div>
                               </div>
                               <div style={{ flex: 1 }}>
                                 <Typography.Text type="secondary">Output:</Typography.Text>
-                                <div style={{ 
-                                  background: '#f5f5f5', 
-                                  padding: 8, 
-                                  borderRadius: 4, 
+                                <div style={{
+                                  background: '#f5f5f5',
+                                  padding: 8,
+                                  borderRadius: 4,
                                   fontFamily: 'monospace',
-                                  whiteSpace: 'pre-wrap'
-                                }}>
+                                  whiteSpace: 'pre-wrap',
+                                }}
+                                >
                                   {testCase.output}
                                 </div>
                               </div>
@@ -361,11 +374,11 @@ int main() {
                           style={{ width: 140, marginRight: 8 }}
                           onChange={handleLanguageChange}
                           options={[
-                            { value: ProgrammingLanguage.CPP, label: "C++" },
-                            { value: ProgrammingLanguage.PYTHON, label: "Python" },
-                            { value: ProgrammingLanguage.JAVA, label: "Java" },
-                            { value: ProgrammingLanguage.JAVASCRIPT, label: "JavaScript" },
-                            { value: ProgrammingLanguage.C, label: "C" },
+                            { value: ProgrammingLanguage.CPP, label: 'C++' },
+                            { value: ProgrammingLanguage.PYTHON, label: 'Python' },
+                            { value: ProgrammingLanguage.JAVA, label: 'Java' },
+                            { value: ProgrammingLanguage.JAVASCRIPT, label: 'JavaScript' },
+                            { value: ProgrammingLanguage.C, label: 'C' },
                           ]}
                         />
                         <Button
@@ -377,8 +390,8 @@ int main() {
                         >
                           Run
                         </Button>
-                        <Button 
-                          type="primary" 
+                        <Button
+                          type="primary"
                           icon={<SendOutlined />}
                           onClick={handleSubmit}
                           loading={submitting}
@@ -393,11 +406,11 @@ int main() {
                       height="300px"
                       language={getMonacoLanguage(language)}
                       value={code}
-                      onChange={(v) => setCode(v || "")}
-                      options={{ 
-                        fontSize: 14, 
+                      onChange={(v) => setCode(v || '')}
+                      options={{
+                        fontSize: 14,
                         minimap: { enabled: false },
-                        theme: 'vs-dark'
+                        theme: 'vs-dark',
                       }}
                     />
                   </Card>
@@ -414,20 +427,21 @@ int main() {
                         />
                       </Tabs.TabPane>
                       <Tabs.TabPane tab="Output" key="output">
-                        <pre style={{ 
-                          margin: 0, 
-                          minHeight: 120, 
-                          background: '#f5f5f5', 
-                          padding: 12, 
-                          borderRadius: 4 
-                        }}>
-                          {stdout || "(run the code to see output)"}
+                        <pre style={{
+                          margin: 0,
+                          minHeight: 120,
+                          background: '#f5f5f5',
+                          padding: 12,
+                          borderRadius: 4,
+                        }}
+                        >
+                          {stdout || '(run the code to see output)'}
                         </pre>
                       </Tabs.TabPane>
                     </Tabs>
                   </Card>
                 </>
-              )
+              ),
             },
             {
               key: 'submissions',
@@ -438,11 +452,11 @@ int main() {
                 </span>
               ),
               children: problem ? (
-                <LazySubmissionList 
+                <LazySubmissionList
                   problemId={problem._id}
                   showProblemColumn={false}
                 />
-              ) : null
+              ) : null,
             },
             ...(isAuthenticated ? [{
               key: 'submit',
@@ -453,15 +467,13 @@ int main() {
                 </span>
               ),
               children: problem ? (
-                <LazySubmissionForm 
+                <LazySubmissionForm
                   problemId={problem._id}
                   problemTitle={problem.title}
-                  onSubmissionCreated={() => {
-                    setActiveTab('submissions');
-                  }}
+                  onSubmissionCreated={handleSubmissionCreated}
                 />
-              ) : null
-            }] : [])
+              ) : null,
+            }] : []),
           ]}
         />
       </Content>
@@ -469,4 +481,4 @@ int main() {
   );
 };
 
-export default Problem;
+export { Problem };

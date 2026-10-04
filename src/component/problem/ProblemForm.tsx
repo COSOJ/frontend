@@ -7,17 +7,18 @@ import {
   Button,
   Card,
   Space,
-  Tag,
   message,
   Row,
   Col,
   Typography,
   Divider,
-  Switch
+  Switch,
+  Alert,
 } from 'antd';
 import { PlusOutlined, MinusCircleOutlined } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
-import { CreateProblemDto, Problem, problemService } from '../../service/problemService';
+import { CreateProblemDto, problemService } from '../../service/problemService';
+import { useAuth } from '../../context/AuthContext';
 
 const { Title } = Typography;
 const { TextArea } = Input;
@@ -33,12 +34,8 @@ export const ProblemForm: React.FC<ProblemFormProps> = ({ mode }) => {
   const [initialLoading, setInitialLoading] = useState(false);
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-
-  useEffect(() => {
-    if (mode === 'edit' && id) {
-      loadProblem(id);
-    }
-  }, [mode, id]);
+  const { user, isLoading: isAuthLoading } = useAuth();
+  const isAdmin = !!user?.roles?.some((role) => role === 'admin' || role === 'superadmin');
 
   const loadProblem = async (problemId: string) => {
     setInitialLoading(true);
@@ -46,17 +43,23 @@ export const ProblemForm: React.FC<ProblemFormProps> = ({ mode }) => {
       const problem = await problemService.getProblem(problemId);
       form.setFieldsValue({
         ...problem,
-        cases: problem.cases || [{ input: '', output: '', isPublic: true }]
+        cases: problem.cases || [{ input: '', output: '', isPublic: true }],
       });
     } catch (error) {
       message.error('Failed to load problem');
       startTransition(() => {
-        navigate('/admin/problems');
+        navigate('/problems');
       });
     } finally {
       setInitialLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (mode === 'edit' && id) {
+      loadProblem(id);
+    }
+  }, [mode, id]);
 
   const onFinish = async (values: CreateProblemDto) => {
     setLoading(true);
@@ -64,7 +67,7 @@ export const ProblemForm: React.FC<ProblemFormProps> = ({ mode }) => {
       // Transform cases back to the expected format
       const formattedValues = {
         ...values,
-        cases: values.cases || []
+        cases: values.cases || [],
       };
 
       if (mode === 'create') {
@@ -84,8 +87,33 @@ export const ProblemForm: React.FC<ProblemFormProps> = ({ mode }) => {
     }
   };
 
-  if (initialLoading) {
+  if (isAuthLoading || initialLoading) {
     return <Card loading />;
+  }
+
+  if (!isAdmin) {
+    return (
+      <Card>
+        <Alert
+          type="error"
+          message="Access denied"
+          description="You need admin privileges to create or edit problems."
+          showIcon
+        />
+        <div style={{ marginTop: 16 }}>
+          <Button
+            type="primary"
+            onClick={() => {
+              startTransition(() => {
+                navigate('/problems');
+              });
+            }}
+          >
+            Back to Problems
+          </Button>
+        </div>
+      </Card>
+    );
   }
 
   return (
@@ -93,7 +121,7 @@ export const ProblemForm: React.FC<ProblemFormProps> = ({ mode }) => {
       <Title level={3}>
         {mode === 'create' ? 'Create Problem' : 'Edit Problem'}
       </Title>
-      
+
       <Form
         form={form}
         layout="vertical"
@@ -104,7 +132,7 @@ export const ProblemForm: React.FC<ProblemFormProps> = ({ mode }) => {
           memoryLimitMb: 256,
           visibility: 'private',
           tags: [],
-          cases: [{ input: '', output: '', isPublic: true }]
+          cases: [{ input: '', output: '', isPublic: true }],
         }}
       >
         <Row gutter={16}>
@@ -220,7 +248,7 @@ export const ProblemForm: React.FC<ProblemFormProps> = ({ mode }) => {
         </Form.Item>
 
         <Divider>Test Cases</Divider>
-        
+
         <Form.List name="cases">
           {(fields, { add, remove }) => (
             <>
@@ -232,13 +260,14 @@ export const ProblemForm: React.FC<ProblemFormProps> = ({ mode }) => {
                   extra={
                     <Space>
                       <Form.Item
+                        // eslint-disable-next-line react/jsx-props-no-spreading
                         {...restField}
                         name={[name, 'isPublic']}
                         valuePropName="checked"
                         noStyle
                       >
-                        <Switch 
-                          checkedChildren="Public" 
+                        <Switch
+                          checkedChildren="Public"
                           unCheckedChildren="Hidden"
                           size="small"
                         />
@@ -258,6 +287,7 @@ export const ProblemForm: React.FC<ProblemFormProps> = ({ mode }) => {
                   <Row gutter={16}>
                     <Col span={12}>
                       <Form.Item
+                        // eslint-disable-next-line react/jsx-props-no-spreading
                         {...restField}
                         name={[name, 'input']}
                         label="Input"
@@ -268,6 +298,7 @@ export const ProblemForm: React.FC<ProblemFormProps> = ({ mode }) => {
                     </Col>
                     <Col span={12}>
                       <Form.Item
+                        // eslint-disable-next-line react/jsx-props-no-spreading
                         {...restField}
                         name={[name, 'output']}
                         label="Expected Output"
@@ -302,7 +333,8 @@ export const ProblemForm: React.FC<ProblemFormProps> = ({ mode }) => {
               startTransition(() => {
                 navigate('/problems');
               });
-            }}>
+            }}
+            >
               Cancel
             </Button>
           </Space>
