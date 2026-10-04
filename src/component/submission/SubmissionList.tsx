@@ -148,14 +148,15 @@ export const SubmissionList: React.FC<SubmissionListProps> = ({
       setSelectedSubmission(fullSubmission);
       setDetailModalVisible(true);
       
-      // Load source code separately
+      // Load source code separately. A failure here usually just means the
+      // underlying file is gone (e.g. old/orphaned data) rather than a
+      // transient error, so this stays a quiet inline note - no toast.
       setSourceCodeLoading(true);
       try {
         const code = await submissionService.getSubmissionSourceCode(submission._id);
         setSourceCode(code);
       } catch (error: any) {
-        message.error('Failed to load source code');
-        setSourceCode('// Failed to load source code');
+        setSourceCode('// Source code unavailable - the original file no longer exists.');
       } finally {
         setSourceCodeLoading(false);
       }
