@@ -1,6 +1,6 @@
 import React from 'react';
 import { Form, Input, Button, Card, Typography, message, Divider } from 'antd';
-import { UserOutlined, LockOutlined, MailOutlined } from '@ant-design/icons';
+import { LockOutlined, MailOutlined } from '@ant-design/icons';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
@@ -23,7 +23,7 @@ export const Login: React.FC = () => {
   const onFinish = async (values: LoginFormValues) => {
     try {
       const success = await login(values.email, values.password);
-      
+
       if (success) {
         message.success('Login successful!');
         navigate(from, { replace: true });
@@ -35,8 +35,7 @@ export const Login: React.FC = () => {
     }
   };
 
-  const onFinishFailed = (errorInfo: any) => {
-    console.log('Failed:', errorInfo);
+  const onFinishFailed = (_errorInfo: any) => {
     message.error('Please fill in all required fields correctly.');
   };
 
@@ -131,7 +130,7 @@ export const Login: React.FC = () => {
 
         <div style={{ textAlign: 'center' }}>
           <Text type="secondary">
-            Don't have an account?{' '}
+            Don&apos;t have an account?{' '}
             <Link
               to="/signup"
               style={{

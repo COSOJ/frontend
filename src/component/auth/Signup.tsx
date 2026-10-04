@@ -24,9 +24,9 @@ export const Signup: React.FC = () => {
         message.error('This email is reserved for admin access. Please use a different email.');
         return;
       }
-      
+
       const success = await signup(values.email, values.password, values.handle);
-      
+
       if (success) {
         message.success('Account created successfully!');
         navigate('/landing', { replace: true });
@@ -38,8 +38,7 @@ export const Signup: React.FC = () => {
     }
   };
 
-  const onFinishFailed = (errorInfo: any) => {
-    console.log('Failed:', errorInfo);
+  const onFinishFailed = (_errorInfo: any) => {
     message.error('Please fill in all required fields correctly.');
   };
 
