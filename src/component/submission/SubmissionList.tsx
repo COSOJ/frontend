@@ -206,9 +206,9 @@ export const SubmissionList: React.FC<SubmissionListProps> = ({
       width: 200,
       render: (problem: any) => (
         <Space direction="vertical" size={0}>
-          <Text code>{problem.code}</Text>
+          <Text code>{problem?.code ?? '—'}</Text>
           <Text type="secondary" style={{ fontSize: '12px' }}>
-            {problem.title}
+            {problem?.title ?? 'Problem deleted'}
           </Text>
         </Space>
       )
@@ -430,8 +430,8 @@ export const SubmissionList: React.FC<SubmissionListProps> = ({
               </Descriptions.Item>
               <Descriptions.Item label="Problem">
                 <Space direction="vertical" size={0}>
-                  <Text code>{selectedSubmission.problem.code}</Text>
-                  <Text type="secondary">{selectedSubmission.problem.title}</Text>
+                  <Text code>{selectedSubmission.problem?.code ?? '—'}</Text>
+                  <Text type="secondary">{selectedSubmission.problem?.title ?? 'Problem deleted'}</Text>
                 </Space>
               </Descriptions.Item>
               <Descriptions.Item label="Language">

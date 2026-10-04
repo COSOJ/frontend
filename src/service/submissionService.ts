@@ -44,11 +44,12 @@ export interface Submission {
     _id: string;
     handle: string;
   };
+  // Can be null when the referenced problem was deleted after this submission was made.
   problem: {
     _id: string;
     code: string;
     title: string;
-  };
+  } | null;
   language: ProgrammingLanguage;
   verdict: SubmissionVerdict;
   timeUsedMs: number;
