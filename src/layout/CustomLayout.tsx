@@ -198,7 +198,7 @@ const CustomLayout = ({ children }: ICustomLayoutProps) => {
       route={{ routes: defaultMenus }}
       menuItemRender={renderMenuItem}
       subMenuItemRender={subMenuItemRender}
-      menuFooterRender={CustomFooterMenu}
+      menuFooterRender={(props) => <CustomFooterMenu {...props} />}
     >
       <PageContainer header={{ title: true }}>
         <Affix offsetTop={0}>
