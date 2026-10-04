@@ -1,4 +1,6 @@
-import { API_BASE } from '../config';
+import { API_BASE, buildAuthHeaders } from './api';
+
+const getAuthHeaders = () => buildAuthHeaders();
 
 export interface TestCase {
   input: string;
@@ -46,22 +48,16 @@ export interface ProblemListResponse {
 }
 
 class ProblemService {
-  private getAuthHeaders() {
-    const token = localStorage.getItem('authToken');
-    return {
-      'Content-Type': 'application/json',
-      ...(token && { 'Authorization': `Bearer ${token}` }),
-    };
-  }
+  private readonly authHeaders = getAuthHeaders;
 
   async getProblems(current: number = 1, pageSize: number = 10): Promise<ProblemListResponse> {
     const response = await fetch(
       `${API_BASE}/problems?current=${current}&pageSize=${pageSize}`,
       {
         method: 'GET',
-        headers: this.getAuthHeaders(),
+        headers: this.authHeaders(),
         credentials: 'include',
-      }
+      },
     );
     if (!response.ok) {
       throw new Error('Failed to fetch problems');
@@ -72,7 +68,7 @@ class ProblemService {
   async getProblem(id: string): Promise<Problem> {
     const response = await fetch(`${API_BASE}/problems/${id}`, {
       method: 'GET',
-      headers: this.getAuthHeaders(),
+      headers: this.authHeaders(),
       credentials: 'include',
     });
     if (!response.ok) {
@@ -84,7 +80,7 @@ class ProblemService {
   async createProblem(problem: CreateProblemDto): Promise<Problem> {
     const response = await fetch(`${API_BASE}/problems`, {
       method: 'POST',
-      headers: this.getAuthHeaders(),
+      headers: this.authHeaders(),
       credentials: 'include',
       body: JSON.stringify(problem),
     });
@@ -97,7 +93,7 @@ class ProblemService {
   async updateProblem(id: string, problem: CreateProblemDto): Promise<Problem> {
     const response = await fetch(`${API_BASE}/problems/${id}`, {
       method: 'PUT',
-      headers: this.getAuthHeaders(),
+      headers: this.authHeaders(),
       credentials: 'include',
       body: JSON.stringify(problem),
     });
@@ -110,7 +106,7 @@ class ProblemService {
   async deleteProblem(id: string): Promise<void> {
     const response = await fetch(`${API_BASE}/problems/${id}`, {
       method: 'DELETE',
-      headers: this.getAuthHeaders(),
+      headers: this.authHeaders(),
       credentials: 'include',
     });
     if (!response.ok) {
