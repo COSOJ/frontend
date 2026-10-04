@@ -1,5 +1,13 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo } from 'react';
-import { API_BASE } from '../config';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+  useMemo,
+  useCallback,
+} from 'react';
+import { API_BASE } from '../service/api';
 
 interface User {
   _id: string;
@@ -61,7 +69,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const tryRestoreSession = async () => {
       setIsLoading(true);
       let token = localStorage.getItem('authToken');
-      let userData = localStorage.getItem('userData');
 
       // If no token, try to refresh
       if (!token) {
@@ -90,14 +97,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           const meRes = await fetch(`${API_BASE}/auth/me`, {
             method: 'GET',
             headers: {
-              'Authorization': `Bearer ${token}`,
+              Authorization: `Bearer ${token}`,
             },
             credentials: 'include',
           });
           if (meRes.ok) {
-            const user = await meRes.json();
-            setUser(user);
-            localStorage.setItem('userData', JSON.stringify(user));
+            const meUser = await meRes.json();
+            setUser(meUser);
+            localStorage.setItem('userData', JSON.stringify(meUser));
           } else {
             setUser(null);
             localStorage.removeItem('authToken');
@@ -113,27 +120,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
     tryRestoreSession();
   }, []);
-  // Optionally, expose a method to refresh token manually
-  const refreshToken = async (): Promise<boolean> => {
-    try {
-      const refreshRes = await fetch(`${API_BASE}/auth/refresh`, {
-        method: 'POST',
-        credentials: 'include',
-      });
-      if (refreshRes.ok) {
-        const refreshData = await refreshRes.json();
-        if (refreshData.accessToken) {
-          localStorage.setItem('authToken', refreshData.accessToken);
-          return true;
-        }
-      }
-      return false;
-    } catch (e) {
-      return false;
-    }
-  };
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const login = useCallback(async (email: string, password: string): Promise<boolean> => {
     setIsLoading(true);
     try {
       const response = await fetch(`${API_BASE}/auth/login`, {
@@ -155,18 +143,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setUser(data.user);
         setIsLoading(false);
         return true;
-      } else {
-        setIsLoading(false);
-        return false;
       }
+      setIsLoading(false);
+      return false;
     } catch (error) {
-      console.error('Login error:', error);
       setIsLoading(false);
       return false;
     }
-  };
+  }, [setIsLoading, setUser]);
 
-  const signup = async (email: string, password: string, handle: string): Promise<boolean> => {
+  const signup = useCallback(async (
+    email: string,
+    password: string,
+    handle: string,
+  ): Promise<boolean> => {
     setIsLoading(true);
     try {
       const response = await fetch(`${API_BASE}/auth/register`, {
@@ -188,38 +178,32 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setUser(data.user);
         setIsLoading(false);
         return true;
-      } else {
-        setIsLoading(false);
-        return false;
       }
+      setIsLoading(false);
+      return false;
     } catch (error) {
-      console.error('Signup error:', error);
       setIsLoading(false);
       return false;
     }
-  };
+  }, [setIsLoading, setUser]);
 
-  const logout = () => {
+  const logout = useCallback(() => {
     localStorage.removeItem('authToken');
     localStorage.removeItem('userData');
     setUser(null);
     // Optionally, call a logout endpoint to clear refresh token cookie
     fetch(`${API_BASE}/auth/logout`, { method: 'POST', credentials: 'include' }).catch(() => {});
-  };
+  }, [setUser]);
 
   // Optionally, fetch extended user data from backend if available
-  const getUserExtendedData = (): UserExtendedData | null => {
+  const getUserExtendedData = useCallback((): UserExtendedData | null =>
     // Not implemented: should fetch from backend if needed
-    return null;
-  };
-
-  const isLoggedIn = useMemo(() => {
-    return user !== null;
-  }, [user]);
+    null, []);
+  const isLoggedIn = useMemo(() => user !== null, [user]);
 
   const isNotLoggedIn = useMemo(() => !isLoggedIn, [isLoggedIn]);
 
-  const value: AuthContextType = {
+  const value: AuthContextType = useMemo(() => ({
     user,
     isAuthenticated: !!user,
     isLoading,
@@ -229,9 +213,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     getUserExtendedData,
     isLoggedIn,
     isNotLoggedIn,
-    // Optionally, you can add refreshToken to context value if needed
-    // refreshToken,
-  };
+  }), [
+    user,
+    isLoading,
+    login,
+    signup,
+    logout,
+    getUserExtendedData,
+    isLoggedIn,
+    isNotLoggedIn,
+  ]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

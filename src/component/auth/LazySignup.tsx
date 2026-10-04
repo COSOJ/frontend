@@ -1,7 +1,7 @@
 import React, { Suspense } from 'react';
 import { Spin } from 'antd';
 
-const Signup = React.lazy(() => import('./Signup').then(module => ({ default: module.Signup })));
+const Signup = React.lazy(() => import('./Signup').then((module) => ({ default: module.Signup })));
 
 const LoadingSpinner = () => (
   <div

@@ -1,12 +1,19 @@
 import React, { lazy, Suspense } from 'react';
 import { Spin } from 'antd';
+import { SubmissionFormProps } from './SubmissionForm';
 
-const SubmissionForm = lazy(() => import('./SubmissionForm'));
+const SubmissionForm = lazy(() => import('./SubmissionForm').then((module) => ({ default: module.SubmissionForm })));
 
-const LazySubmissionForm: React.FC<any> = (props) => (
+export const LazySubmissionForm: React.FC<SubmissionFormProps> = ({
+  problemId,
+  problemTitle,
+  onSubmissionCreated,
+}) => (
   <Suspense fallback={<Spin size="large" />}>
-    <SubmissionForm {...props} />
+    <SubmissionForm
+      problemId={problemId}
+      problemTitle={problemTitle}
+      onSubmissionCreated={onSubmissionCreated}
+    />
   </Suspense>
 );
-
-export default LazySubmissionForm;

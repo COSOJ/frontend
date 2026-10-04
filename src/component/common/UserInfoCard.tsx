@@ -1,9 +1,9 @@
 import React from 'react';
-import { Card, Descriptions, Tag, Typography, Space, Button } from 'antd';
+import { Card, Descriptions, Tag, Typography, Space } from 'antd';
 import { UserOutlined, CrownOutlined } from '@ant-design/icons';
 import { useAuth } from '../../context/AuthContext';
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 
 export const UserInfoCard: React.FC = () => {
   const { user, getUserExtendedData } = useAuth();
@@ -55,7 +55,7 @@ export const UserInfoCard: React.FC = () => {
           </Tag>
         </Descriptions.Item>
       </Descriptions>
-      
+
       {isAdmin && (
         <div style={{ marginTop: 16, padding: 12, background: '#fff7e6', borderRadius: 6 }}>
           <Text type="warning" strong>
@@ -68,19 +68,6 @@ export const UserInfoCard: React.FC = () => {
         </div>
       )}
 
-      <div style={{ marginTop: 16 }}>
-        <Button 
-          type="primary" 
-          size="small"
-          onClick={() => {
-            console.log('Current user data:', user);
-            console.log('Extended user data:', userExtendedData);
-            console.log('Auth token:', localStorage.getItem('authToken'));
-          }}
-        >
-          Log User Data to Console
-        </Button>
-      </div>
     </Card>
   );
 };

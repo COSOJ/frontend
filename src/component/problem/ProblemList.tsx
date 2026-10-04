@@ -5,17 +5,16 @@ import {
   Space,
   Card,
   Tag,
-  Modal,
   message,
   Popconfirm,
   Typography,
-  Badge
+  Badge,
 } from 'antd';
 import {
   PlusOutlined,
   EditOutlined,
   DeleteOutlined,
-  EyeOutlined
+  EyeOutlined,
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { Problem, problemService } from '../../service/problemService';
@@ -33,7 +32,7 @@ export const ProblemList: React.FC = () => {
   const { user } = useAuth();
 
   // Check if user is admin/superadmin
-  const isAdmin = user && user.roles?.includes('admin') || user?.roles?.includes('superadmin');
+  const isAdmin = !!user?.roles?.some((role) => role === 'admin' || role === 'superadmin');
 
   const loadProblems = async (page = 1) => {
     setLoading(true);
@@ -75,6 +74,8 @@ export const ProblemList: React.FC = () => {
     return 'Hard';
   };
 
+  const getProblemId = (record: Problem) => record._id;
+
   const columns = [
     {
       title: 'Code',
@@ -92,7 +93,7 @@ export const ProblemList: React.FC = () => {
           type="link"
           onClick={() => {
             startTransition(() => {
-              navigate(`/problem/${record._id}`);
+              navigate(`/problem/${getProblemId(record)}`);
             });
           }}
           style={{ padding: 0, height: 'auto' }}
@@ -159,7 +160,7 @@ export const ProblemList: React.FC = () => {
             icon={<EyeOutlined />}
             onClick={() => {
               startTransition(() => {
-                navigate(`/problem/${record._id}`);
+                navigate(`/problem/${getProblemId(record)}`);
               });
             }}
             title="View Problem"
@@ -171,7 +172,7 @@ export const ProblemList: React.FC = () => {
                 icon={<EditOutlined />}
                 onClick={() => {
                   startTransition(() => {
-                    navigate(`/admin/problems/${record._id}/edit`);
+                    navigate(`/admin/problems/${getProblemId(record)}/edit`);
                   });
                 }}
                 title="Edit Problem"
@@ -179,7 +180,7 @@ export const ProblemList: React.FC = () => {
               <Popconfirm
                 title="Delete Problem"
                 description="Are you sure you want to delete this problem?"
-                onConfirm={() => handleDelete(record._id)}
+                onConfirm={() => handleDelete(getProblemId(record))}
                 okText="Yes"
                 cancelText="No"
               >
@@ -215,11 +216,11 @@ export const ProblemList: React.FC = () => {
           </Button>
         )}
       </div>
-      
+
       <Table
         columns={columns}
         dataSource={problems}
-        rowKey="_id"
+        rowKey={(record) => record._id}
         loading={loading}
         pagination={{
           current,
@@ -228,8 +229,8 @@ export const ProblemList: React.FC = () => {
           onChange: loadProblems,
           showSizeChanger: false,
           showQuickJumper: true,
-          showTotal: (total, range) =>
-            `${range[0]}-${range[1]} of ${total} problems`,
+          showTotal: (totalItems, range) =>
+            `${range[0]}-${range[1]} of ${totalItems} problems`,
         }}
       />
     </Card>
