@@ -1,15 +1,41 @@
-import React, { useContext } from 'react';
-import { Layout, Typography, Space } from 'antd';
+import React from 'react';
+import { Layout, Typography, Space, Tabs } from 'antd';
 import { HistoryOutlined } from '@ant-design/icons';
-import LazySubmissionList from '../submission/LazySubmissionList';
-import LazyUserStats from '../submission/LazyUserStats';
+import { LazySubmissionList } from './LazySubmissionList';
+import { LazyUserStats } from './LazyUserStats';
 import { useAuth } from '../../context/AuthContext';
 
 const { Content } = Layout;
 const { Title } = Typography;
 
-const SubmissionsPage: React.FC = () => {
+export const SubmissionsPage: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
+
+  const tabItems = [
+    {
+      key: 'all',
+      label: 'All Submissions',
+      children: (
+        <LazySubmissionList
+          showUserColumn
+          showProblemColumn
+        />
+      ),
+    },
+    ...(isAuthenticated && user ? [
+      {
+        key: 'mine',
+        label: 'My Submissions',
+        children: (
+          <LazySubmissionList
+            userId={user._id}
+            showUserColumn={false}
+            showProblemColumn
+          />
+        ),
+      },
+    ] : []),
+  ];
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
@@ -23,21 +49,15 @@ const SubmissionsPage: React.FC = () => {
 
           {/* User Stats - only show if authenticated */}
           {isAuthenticated && user && (
-            <LazyUserStats 
+            <LazyUserStats
               userId={user._id}
               userHandle={user.handle}
             />
           )}
 
-          {/* All Submissions List */}
-          <LazySubmissionList 
-            showUserColumn={true}
-            showProblemColumn={true}
-          />
+          <Tabs items={tabItems} />
         </Space>
       </Content>
     </Layout>
   );
 };
-
-export default SubmissionsPage;

@@ -41,14 +41,14 @@ const { Option } = Select;
 const { Search } = Input;
 const { Text, Title } = Typography;
 
-interface SubmissionListProps {
+export interface SubmissionListProps {
   problemId?: string;
   userId?: string;
   showUserColumn?: boolean;
   showProblemColumn?: boolean;
 }
 
-const SubmissionList: React.FC<SubmissionListProps> = ({
+export const SubmissionList: React.FC<SubmissionListProps> = ({
   problemId,
   userId,
   showUserColumn = true,
@@ -497,5 +497,3 @@ const SubmissionList: React.FC<SubmissionListProps> = ({
     </>
   );
 };
-
-export default SubmissionList;

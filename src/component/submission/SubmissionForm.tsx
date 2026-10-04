@@ -1,38 +1,38 @@
 import React, { useState } from 'react';
-import { 
-  Form, 
-  Select, 
-  Button, 
-  message, 
-  Card, 
-  Spin,
+import {
+  Form,
+  Select,
+  Button,
+  message,
+  Card,
   Typography,
   Space,
   Alert,
-  Input
+  Input,
 } from 'antd';
 import { CodeOutlined, SendOutlined } from '@ant-design/icons';
-import { 
-  submissionService, 
-  ProgrammingLanguage, 
+import {
+  submissionService,
+  getLanguageDisplayName,
+  ProgrammingLanguage,
   CreateSubmissionDto,
-  Submission 
+  Submission,
 } from '../../service/submissionService';
 
 const { Option } = Select;
 const { TextArea } = Input;
 const { Text, Title } = Typography;
 
-interface SubmissionFormProps {
+export interface SubmissionFormProps {
   problemId: string;
   problemTitle: string;
   onSubmissionCreated?: (submission: Submission) => void;
 }
 
-const SubmissionForm: React.FC<SubmissionFormProps> = ({
+export const SubmissionForm: React.FC<SubmissionFormProps> = ({
   problemId,
   problemTitle,
-  onSubmissionCreated
+  onSubmissionCreated,
 }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
@@ -41,22 +41,21 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({
   const handleSubmit = async (values: any) => {
     try {
       setLoading(true);
-      
+
       const submissionData: CreateSubmissionDto = {
         problem: problemId,
         language: values.language,
-        code: values.code
+        code: values.code,
       };
-      
+
       const submission = await submissionService.submitSolution(submissionData);
-      
+
       message.success('Solution submitted successfully!');
       form.resetFields();
-      
+
       if (onSubmissionCreated) {
         onSubmissionCreated(submission);
       }
-      
     } catch (error: any) {
       message.error(error.message || 'Failed to submit solution');
     } finally {
@@ -75,7 +74,7 @@ int main() {
     // Your solution here
     return 0;
 }`;
-      
+
       case ProgrammingLanguage.JAVA:
         return `import java.util.*;
 
@@ -85,7 +84,7 @@ public class Solution {
         // Your solution here
     }
 }`;
-      
+
       case ProgrammingLanguage.PYTHON:
         return `# Your solution here
 def solve():
@@ -93,7 +92,7 @@ def solve():
 
 if __name__ == "__main__":
     solve()`;
-      
+
       case ProgrammingLanguage.JAVASCRIPT:
         return `// Your solution here
 function solve() {
@@ -101,7 +100,7 @@ function solve() {
 }
 
 solve();`;
-      
+
       case ProgrammingLanguage.C:
         return `#include <stdio.h>
 #include <stdlib.h>
@@ -110,7 +109,7 @@ int main() {
     // Your solution here
     return 0;
 }`;
-      
+
       default:
         return 'Write your solution here...';
     }
@@ -134,13 +133,13 @@ int main() {
         style={{ marginBottom: 16 }}
         showIcon
       />
-      
+
       <Form
         form={form}
         layout="vertical"
         onFinish={handleSubmit}
         initialValues={{
-          language: ProgrammingLanguage.CPP
+          language: ProgrammingLanguage.CPP,
         }}
       >
         <Form.Item
@@ -154,19 +153,19 @@ int main() {
             size="large"
           >
             <Option value={ProgrammingLanguage.CPP}>
-              {submissionService.getLanguageDisplayName(ProgrammingLanguage.CPP)}
+              {getLanguageDisplayName(ProgrammingLanguage.CPP)}
             </Option>
             <Option value={ProgrammingLanguage.JAVA}>
-              {submissionService.getLanguageDisplayName(ProgrammingLanguage.JAVA)}
+              {getLanguageDisplayName(ProgrammingLanguage.JAVA)}
             </Option>
             <Option value={ProgrammingLanguage.PYTHON}>
-              {submissionService.getLanguageDisplayName(ProgrammingLanguage.PYTHON)}
+              {getLanguageDisplayName(ProgrammingLanguage.PYTHON)}
             </Option>
             <Option value={ProgrammingLanguage.JAVASCRIPT}>
-              {submissionService.getLanguageDisplayName(ProgrammingLanguage.JAVASCRIPT)}
+              {getLanguageDisplayName(ProgrammingLanguage.JAVASCRIPT)}
             </Option>
             <Option value={ProgrammingLanguage.C}>
-              {submissionService.getLanguageDisplayName(ProgrammingLanguage.C)}
+              {getLanguageDisplayName(ProgrammingLanguage.C)}
             </Option>
           </Select>
         </Form.Item>
@@ -176,15 +175,15 @@ int main() {
           label="Source Code"
           rules={[
             { required: true, message: 'Please enter your source code' },
-            { min: 10, message: 'Code must be at least 10 characters long' }
+            { min: 10, message: 'Code must be at least 10 characters long' },
           ]}
         >
           <TextArea
             placeholder={getCodePlaceholder(selectedLanguage)}
             rows={20}
-            style={{ 
+            style={{
               fontFamily: 'monospace',
-              fontSize: '14px'
+              fontSize: '14px',
             }}
           />
         </Form.Item>
@@ -202,15 +201,13 @@ int main() {
           </Button>
         </Form.Item>
       </Form>
-      
+
       <div style={{ marginTop: 16 }}>
         <Text type="secondary">
-          <strong>Note:</strong> Your submission will be evaluated against the test cases. 
+          <strong>Note:</strong> Your submission will be evaluated against the test cases.
           Make sure your solution handles all edge cases correctly.
         </Text>
       </div>
     </Card>
   );
 };
-
-export default SubmissionForm;

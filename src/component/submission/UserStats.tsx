@@ -1,38 +1,38 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Card, 
-  Statistic, 
-  Row, 
-  Col, 
-  Progress, 
-  Typography, 
+import {
+  Card,
+  Statistic,
+  Row,
+  Col,
+  Progress,
+  Typography,
   Space,
   message,
-  Spin
+  Spin,
 } from 'antd';
-import { 
-  TrophyOutlined, 
+import {
+  TrophyOutlined,
   CodeOutlined,
   CheckCircleOutlined,
   CloseCircleOutlined,
-  ClockCircleOutlined
+  ClockCircleOutlined,
 } from '@ant-design/icons';
-import { 
-  submissionService, 
-  UserStats, 
-  SubmissionVerdict 
+import {
+  submissionService,
+  UserStats,
+  SubmissionVerdict,
 } from '../../service/submissionService';
 
 const { Title, Text } = Typography;
 
-interface UserStatsProps {
+export interface UserStatsProps {
   userId: string;
   userHandle?: string;
 }
 
-const UserStatsComponent: React.FC<UserStatsProps> = ({ 
-  userId, 
-  userHandle 
+export const UserStatsComponent: React.FC<UserStatsProps> = ({
+  userId,
+  userHandle,
 }) => {
   const [stats, setStats] = useState<UserStats | null>(null);
   const [loading, setLoading] = useState(false);
@@ -70,7 +70,7 @@ const UserStatsComponent: React.FC<UserStatsProps> = ({
   }
 
   const getVerdictCount = (verdict: SubmissionVerdict): number => {
-    const found = stats.verdictBreakdown.find(item => item._id === verdict);
+    const found = stats.verdictBreakdown.find((item) => item._id === verdict);
     return found ? found.count : 0;
   };
 
@@ -82,53 +82,53 @@ const UserStatsComponent: React.FC<UserStatsProps> = ({
   const compilationErrorCount = getVerdictCount(SubmissionVerdict.COMPILATION_ERROR);
   const pendingCount = getVerdictCount(SubmissionVerdict.PENDING);
 
-  const successRate = stats.totalSubmissions > 0 
-    ? Math.round((acceptedCount / stats.totalSubmissions) * 100) 
-    : 0;
+  const successRate = stats.totalSubmissions > 0 ?
+    Math.round((acceptedCount / stats.totalSubmissions) * 100) :
+    0;
 
   const verdictStats = [
     {
       label: 'Accepted',
       count: acceptedCount,
       color: '#52c41a',
-      icon: <CheckCircleOutlined />
+      icon: <CheckCircleOutlined />,
     },
     {
       label: 'Wrong Answer',
       count: wrongAnswerCount,
       color: '#ff4d4f',
-      icon: <CloseCircleOutlined />
+      icon: <CloseCircleOutlined />,
     },
     {
       label: 'Time Limit Exceeded',
       count: timeExceededCount,
       color: '#fa8c16',
-      icon: <ClockCircleOutlined />
+      icon: <ClockCircleOutlined />,
     },
     {
       label: 'Memory Limit Exceeded',
       count: memoryExceededCount,
       color: '#fa8c16',
-      icon: <ClockCircleOutlined />
+      icon: <ClockCircleOutlined />,
     },
     {
       label: 'Runtime Error',
       count: runtimeErrorCount,
       color: '#ff4d4f',
-      icon: <CloseCircleOutlined />
+      icon: <CloseCircleOutlined />,
     },
     {
       label: 'Compilation Error',
       count: compilationErrorCount,
       color: '#ff4d4f',
-      icon: <CloseCircleOutlined />
+      icon: <CloseCircleOutlined />,
     },
     {
       label: 'Pending',
       count: pendingCount,
       color: '#1890ff',
-      icon: <ClockCircleOutlined />
-    }
+      icon: <ClockCircleOutlined />,
+    },
   ];
 
   return (
@@ -154,7 +154,7 @@ const UserStatsComponent: React.FC<UserStatsProps> = ({
             />
           </Card>
         </Col>
-        
+
         <Col xs={24} sm={12} md={6}>
           <Card size="small">
             <Statistic
@@ -165,7 +165,7 @@ const UserStatsComponent: React.FC<UserStatsProps> = ({
             />
           </Card>
         </Col>
-        
+
         <Col xs={24} sm={12} md={6}>
           <Card size="small">
             <Statistic
@@ -177,7 +177,7 @@ const UserStatsComponent: React.FC<UserStatsProps> = ({
             />
           </Card>
         </Col>
-        
+
         <Col xs={24} sm={12} md={6}>
           <Card size="small">
             <div style={{ textAlign: 'center' }}>
@@ -194,16 +194,16 @@ const UserStatsComponent: React.FC<UserStatsProps> = ({
       </Row>
 
       {/* Verdict Breakdown */}
-      <Card 
-        title="Verdict Breakdown" 
-        size="small" 
+      <Card
+        title="Verdict Breakdown"
+        size="small"
         style={{ marginTop: 16 }}
       >
         <Row gutter={[16, 16]}>
           {verdictStats
-            .filter(stat => stat.count > 0)
-            .map((stat, index) => (
-              <Col xs={24} sm={12} md={8} lg={6} key={index}>
+            .filter((stat) => stat.count > 0)
+            .map((stat) => (
+              <Col xs={24} sm={12} md={8} lg={6} key={stat.label}>
                 <Card size="small" style={{ textAlign: 'center' }}>
                   <Space direction="vertical" size="small">
                     <div style={{ color: stat.color, fontSize: '24px' }}>
@@ -254,7 +254,7 @@ const UserStatsComponent: React.FC<UserStatsProps> = ({
             </Space>
           </Card>
         </Col>
-        
+
         <Col xs={24} md={12}>
           <Card size="small" title="Error Analysis">
             <Space direction="vertical" style={{ width: '100%' }}>
@@ -283,5 +283,3 @@ const UserStatsComponent: React.FC<UserStatsProps> = ({
     </Card>
   );
 };
-
-export default UserStatsComponent;

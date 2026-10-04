@@ -1,12 +1,10 @@
 import React, { lazy, Suspense } from 'react';
 import { Spin } from 'antd';
 
-const SubmissionsPage = lazy(() => import('./SubmissionsPage'));
+const SubmissionsPage = lazy(() => import('./SubmissionsPage').then((module) => ({ default: module.SubmissionsPage })));
 
-const LazySubmissionsPage: React.FC<any> = (props) => (
+export const LazySubmissionsPage: React.FC = () => (
   <Suspense fallback={<Spin size="large" />}>
-    <SubmissionsPage {...props} />
+    <SubmissionsPage />
   </Suspense>
 );
-
-export default LazySubmissionsPage;

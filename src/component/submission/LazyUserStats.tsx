@@ -1,12 +1,11 @@
 import React, { lazy, Suspense } from 'react';
 import { Spin } from 'antd';
+import { UserStatsProps } from './UserStats';
 
-const UserStats = lazy(() => import('./UserStats'));
+const UserStats = lazy(() => import('./UserStats').then((module) => ({ default: module.UserStatsComponent })));
 
-const LazyUserStats: React.FC<any> = (props) => (
+export const LazyUserStats: React.FC<UserStatsProps> = ({ userId, userHandle }) => (
   <Suspense fallback={<Spin size="large" />}>
-    <UserStats {...props} />
+    <UserStats userId={userId} userHandle={userHandle} />
   </Suspense>
 );
-
-export default LazyUserStats;
