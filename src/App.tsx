@@ -39,11 +39,17 @@ const LoadingFallback = () => (
 const CreateProblemForm = () => <ProblemForm mode="create" />;
 const EditProblemForm = () => <ProblemForm mode="edit" />;
 
+// GitHub Pages serves this app from /frontend/; other hosts (e.g. the
+// Docker image, served at the webroot) override this at build time via
+// VITE_ROUTER_BASENAME so client-side routing matches where it's actually
+// mounted.
+const ROUTER_BASENAME = import.meta.env.VITE_ROUTER_BASENAME ?? '/frontend';
+
 const AppBase = () => {
   const { isNotLoggedIn, isLoggedIn } = useAuth();
   return (
     <ConfigProvider locale={enUS}>
-      <BrowserRouter basename="/frontend">
+      <BrowserRouter basename={ROUTER_BASENAME}>
         <CustomLayout>
           <Suspense fallback={<LoadingFallback />}>
             <Routes>
